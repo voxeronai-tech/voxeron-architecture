@@ -1,0 +1,5 @@
+openapi: 3.1.0
+info:
+  title: Voxeron API
+  version: "0.6.0"
+paths: {}
