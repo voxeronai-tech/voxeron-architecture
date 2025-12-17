@@ -513,3 +513,6 @@ Architecture decisions captured via ADRs
 Production rollouts require approval and audit
 
 Rollbacks must be supported at all times
+
+Voxeron Platform Blueprint v0.6
+Locked Baseline Reference Architecture
