@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/overflow_toggled.v0.6.json",
+  "title": "Event Payload: OverflowToggled v0.6",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["enabled"],
+  "properties": {
+    "enabled": { "type": "boolean" },
+    "effective_until": { "type": ["string", "null"], "format": "date-time" },
+    "reason": { "type": ["string", "null"] }
+  }
+}

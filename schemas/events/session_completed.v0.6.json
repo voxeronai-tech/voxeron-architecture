@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/session_completed.v0.6.json",
+  "title": "Event Payload: SessionCompleted v0.6",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["outcome"],
+  "properties": {
+    "outcome": { "type": "string", "enum": ["completed", "escalated", "abandoned", "failed"] },
+    "language": { "type": ["string", "null"] },
+    "duration_sec": { "type": ["integer", "null"], "minimum": 0 },
+    "notes": { "type": ["string", "null"] }
+  }
+}

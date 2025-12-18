@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/domain/printer_ticket.v0.6.json",
+  "title": "PrinterTicket v0.6",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["tenant_id", "session_id", "job_id", "printer_id", "format", "content"],
+  "properties": {
+    "tenant_id": { "type": "string", "minLength": 3 },
+    "location_id": { "type": ["string", "null"] },
+    "session_id": { "type": "string", "minLength": 6 },
+    "job_id": { "type": "string", "minLength": 8 },
+    "printer_id": { "type": "string", "minLength": 2 },
+    "format": { "type": "string", "enum": ["text", "escpos"] },
+    "content": { "type": "string", "minLength": 1 },
+    "dedupe_key": { "type": ["string", "null"], "minLength": 8 }
+  }
+}

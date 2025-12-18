@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/envelope.event.v0.6.json",
+  "title": "Voxeron Event Envelope v0.6",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "event_type",
+    "tenant_id",
+    "session_id",
+    "correlation_id",
+    "occurred_at",
+    "payload"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "0.6.0" },
+    "event_id": { "type": "string", "minLength": 8 },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "OrderDrafted",
+        "OrderCreated",
+        "OrderWritebackFailed",
+        "PrinterTicketDispatched",
+        "PrinterTicketFailed",
+        "OverflowToggled",
+        "HumanEscalated",
+        "MenuUpdated",
+        "KitchenStatusUpdated",
+        "VendorRouted",
+        "SessionCompleted"
+      ]
+    },
+    "tenant_id": { "type": "string", "minLength": 3 },
+    "location_id": { "type": ["string", "null"] },
+    "session_id": { "type": "string", "minLength": 6 },
+    "correlation_id": { "type": "string", "minLength": 6 },
+    "idempotency_key": { "type": ["string", "null"], "minLength": 8 },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "actor": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["type", "id"],
+      "properties": {
+        "type": { "type": "string", "enum": ["system", "admin", "tenant_user", "edge_agent"] },
+        "id": { "type": "string", "minLength": 3 }
+      }
+    },
+    "payload": {
+      "oneOf": [
+        { "$ref": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/order_drafted.v0.6.json" },
+        { "$ref": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/order_created.v0.6.json" },
+        { "$ref": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/order_writeback_failed.v0.6.json" },
+        { "$ref": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/printer_ticket_dispatched.v0.6.json" },
+        { "$ref": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/printer_ticket_failed.v0.6.json" },
+        { "$ref": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/overflow_toggled.v0.6.json" },
+        { "$ref": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/human_escalated.v0.6.json" },
+        { "$ref": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/menu_updated.v0.6.json" },
+        { "$ref": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/kitchen_status_updated.v0.6.json" },
+        { "$ref": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/vendor_routed.v0.6.json" },
+        { "$ref": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/session_completed.v0.6.json" }
+      ]
+    }
+  }
+}

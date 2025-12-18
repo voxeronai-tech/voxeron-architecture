@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/kitchen_status_updated.v0.6.json",
+  "title": "Event Payload: KitchenStatusUpdated v0.6",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kitchen_status"],
+  "properties": {
+    "kitchen_status": { "$ref": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/domain/kitchen_status.v0.6.json" }
+  }
+}

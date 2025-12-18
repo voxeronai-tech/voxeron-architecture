@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/domain/routing_snapshot.v0.6.json",
+  "title": "RoutingSnapshot v0.6",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["asr", "llm", "tts"],
+  "properties": {
+    "asr": { "$ref": "#/$defs/ProviderChoice" },
+    "llm": { "$ref": "#/$defs/ProviderChoice" },
+    "tts": { "$ref": "#/$defs/ProviderChoice" },
+    "reason": { "type": ["string", "null"] }
+  },
+  "$defs": {
+    "ProviderChoice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "model"],
+      "properties": {
+        "provider": { "type": "string", "minLength": 2 },
+        "model": { "type": "string", "minLength": 1 },
+        "locale": { "type": ["string", "null"] },
+        "policy": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

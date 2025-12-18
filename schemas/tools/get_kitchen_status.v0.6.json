@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/tools/get_kitchen_status.v0.6.json",
+  "title": "Tool: get_kitchen_status v0.6",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["input", "output"],
+  "properties": {
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tenant_id"],
+      "properties": {
+        "tenant_id": { "type": "string", "minLength": 3 },
+        "location_id": { "type": ["string", "null"] }
+      }
+    },
+    "output": { "$ref": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/domain/kitchen_status.v0.6.json" }
+  }
+}

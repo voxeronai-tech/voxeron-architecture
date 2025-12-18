@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/menu_updated.v0.6.json",
+  "title": "Event Payload: MenuUpdated v0.6",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["updated_at"],
+  "properties": {
+    "updated_at": { "type": "string", "format": "date-time" },
+    "source": { "type": ["string", "null"] }
+  }
+}

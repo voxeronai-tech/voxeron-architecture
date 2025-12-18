@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/domain/order_draft.v0.6.json",
+  "title": "OrderDraft v0.6",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["tenant_id", "session_id", "fulfillment_type", "items"],
+  "properties": {
+    "tenant_id": { "type": "string", "minLength": 3 },
+    "location_id": { "type": ["string", "null"] },
+    "session_id": { "type": "string", "minLength": 6 },
+    "customer": { "$ref": "#/$defs/Customer" },
+    "fulfillment_type": { "type": "string", "enum": ["pickup", "delivery"] },
+    "requested_time": { "type": ["string", "null"], "format": "date-time" },
+    "special_instructions": { "type": ["string", "null"], "maxLength": 500 },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/OrderItem" }
+    },
+    "totals": { "$ref": "#/$defs/Totals" },
+    "idempotency_key": { "type": ["string", "null"], "minLength": 8 }
+  },
+  "$defs": {
+    "Customer": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "phone": { "type": ["string", "null"] },
+        "address": { "$ref": "#/$defs/Address" }
+      }
+    },
+    "Address": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["line1", "city"],
+      "properties": {
+        "line1": { "type": "string", "minLength": 1 },
+        "line2": { "type": ["string", "null"] },
+        "postal_code": { "type": ["string", "null"] },
+        "city": { "type": "string", "minLength": 1 },
+        "country": { "type": ["string", "null"] }
+      }
+    },
+    "Money": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["amount", "currency"],
+      "properties": {
+        "amount": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string", "minLength": 3, "maxLength": 3 }
+      }
+    },
+    "OrderItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["item_id", "name", "quantity"],
+      "properties": {
+        "item_id": { "type": "string", "minLength": 2 },
+        "name": { "type": "string", "minLength": 1 },
+        "quantity": { "type": "integer", "minimum": 1, "maximum": 50 },
+        "unit_price": { "$ref": "#/$defs/Money" },
+        "modifiers": { "type": "array", "items": { "type": "string" } },
+        "notes": { "type": ["string", "null"], "maxLength": 200 }
+      }
+    },
+    "Totals": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "subtotal": { "$ref": "#/$defs/Money" },
+        "tax": { "$ref": "#/$defs/Money" },
+        "delivery_fee": { "$ref": "#/$defs/Money" },
+        "total": { "$ref": "#/$defs/Money" }
+      }
+    }
+  }
+}

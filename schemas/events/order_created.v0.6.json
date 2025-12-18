@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/order_created.v0.6.json",
+  "title": "Event Payload: OrderCreated v0.6",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["order_result"],
+  "properties": {
+    "order_result": { "$ref": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/domain/order_result.v0.6.json" }
+  }
+}

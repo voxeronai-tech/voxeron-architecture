@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/human_escalated.v0.6.json",
+  "title": "Event Payload: HumanEscalated v0.6",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mode", "reason"],
+  "properties": {
+    "mode": { "type": "string", "enum": ["cold_transfer", "warm_transfer", "deferred_callback"] },
+    "reason": { "type": "string", "minLength": 1 },
+    "summary": { "type": ["string", "null"], "maxLength": 2000 }
+  }
+}

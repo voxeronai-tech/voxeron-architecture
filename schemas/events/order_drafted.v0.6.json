@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/order_drafted.v0.6.json",
+  "title": "Event Payload: OrderDrafted v0.6",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["order_draft"],
+  "properties": {
+    "order_draft": { "$ref": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/domain/order_draft.v0.6.json" }
+  }
+}

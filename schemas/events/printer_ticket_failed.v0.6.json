@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/events/printer_ticket_failed.v0.6.json",
+  "title": "Event Payload: PrinterTicketFailed v0.6",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["job_id", "printer_id", "reason"],
+  "properties": {
+    "job_id": { "type": "string", "minLength": 8 },
+    "printer_id": { "type": "string", "minLength": 2 },
+    "reason": { "type": "string", "minLength": 1 },
+    "retryable": { "type": "boolean", "default": true }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voxeronai-tech.github.io/voxeron-architecture/schemas/domain/message_result.v0.6.json",
+  "title": "MessageResult v0.6",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status"],
+  "properties": {
+    "status": { "type": "string", "enum": ["sent", "queued", "failed"] },
+    "provider_message_id": { "type": ["string", "null"] },
+    "error": { "type": ["string", "null"] }
+  }
+}
