@@ -1,3 +1,5 @@
+> **Note:** This document is a locked baseline. See [Blueprint v0.6.1 Addendum](./Voxeron-Blueprint-v0.6.1.md) for current engineering invariants regarding the Semantic Gate, ADR-004 Verification, and S1-4A Telemetry.
+
 # 📐 Voxeron Platform Blueprint v0.6
 
 **Project Name:** Voxeron  

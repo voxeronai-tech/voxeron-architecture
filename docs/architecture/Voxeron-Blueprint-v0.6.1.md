@@ -1,240 +1,94 @@
-# 📐 Voxeron Platform Blueprint v0.6.1
+# 📐 Voxeron Platform Blueprint v0.6.1 Addendum
 
-**Project Name:** Voxeron  
-**Status:** Locked baseline (clarified implementation contract)  
-**Versioning:** Semantic Versioning (SemVer)  
-**Supersedes:** v0.6 (non-breaking clarification release)  
-**Primary Use Case:** Hybrid overflow automation for restaurants, extensible to service and public-sector domains  
-**Design Goal:** Scale from single-tenant demo to 1,000+ tenants without architectural rewrites  
+**Title:** Deterministic Semantic Gate, Verification Gates, and Telemetry Audit Window  
+**Status:** Clarifying addendum (non-breaking)  
+**Applies to:** Voxeron Platform Blueprint v0.6 (Locked Baseline)  
+**Date:** 2026-01-20  
 
 ---
 
-## 1. Platform Overview
+## 1. Purpose
 
-Voxeron is a stateless, real-time AI voice platform designed for structured service interactions such as order intake, reservations, scheduling, and triage. The system is built around the principle that conversational behavior, tenant configuration, and execution logic must remain cleanly separated.
+This document is a **clarifying addendum** to Blueprint v0.6. It does **not** change the four-plane model (Control, Data, Integration, Edge). Instead, it documents the **rules of engagement** and technical invariants realized during the RC1-4 and S1-4 development cycles:
 
-The platform is streaming-first and supports duplex audio, interruption (barge-in), and deterministic tool invocation through typed contracts. Business side effects are executed asynchronously and are observable, replayable, and protected by idempotency.
-
-Voxeron is organized into four architectural planes:
-
-- **Control Plane**, responsible for configuration and governance  
-- **Data Plane**, responsible for real-time voice execution  
-- **Integration Plane**, responsible for business actions and external systems  
-- **Edge Plane**, responsible for on-site hardware and local resilience  
+- **Deterministic-first execution** (The "Semantic Gate")
+- **Dual-layer verification gates** (ADR-004)
+- **Telemetry-based audit window** (S1-4A)
 
 ---
 
-## 2. Architectural Principles
+## 2. Architectural Fit (Refining the Planes)
 
-The architecture of Voxeron is guided by a small number of non-negotiable principles.
+While the planes remain separate, their internal responsibilities are now more precisely defined:
 
-Execution is stateless and horizontally scalable. Tenant isolation is enforced at every layer. Integrations are event-driven and failure-aware. Vendor dependencies are abstracted behind routing and policy layers. Streaming is the default interaction mode, not an optimization.
+### 2.1 Data Plane: Deterministic Session Orchestration
 
-Deterministic behavior is achieved through typed contracts and validation. Failure is treated as a first-class scenario and must degrade gracefully. Privacy, consent, and data residency are enforced by design. Operational safety is guaranteed through staged rollouts and kill switches.
+The **Data Plane** is the exclusive home of real-time execution logic.
 
----
+- **Refinement:** All session logic (turn-taking, slot-filling, confirmation latching, and cart mutations) is now governed by a **Deterministic State Machine**.
+- **The Invariant:** LLM output is treated as a *non-authoritative suggestion*. No state mutation or transactional commitment may occur without validation against the deterministic Semantic Gate.
 
-## 3. High-Level Architecture
+### 2.2 Control Plane: Governance of Runtime Policies
 
-### 3.1 Control Plane
+The **Control Plane** remains responsible for "the rules of the game," but not the play-by-play execution.
 
-The control plane governs how Voxeron is configured, rolled out, and audited. It owns tenant provisioning, blueprint lifecycle management, feature flags, and routing policies.
+- **Refinement:** Deterministic behavior thresholds (e.g., confidence scores for auto-confirmation) are managed as **Runtime Policies** in the Control Plane and injected into the Data Plane at session start.
 
-It is also responsible for governance functions such as approval workflows, configuration history, environment promotion, and API token management. No real-time execution occurs in the control plane.
+### 2.3 Observability (Cross-Cutting)
 
----
+Telemetry (S1-4) is confirmed as a cross-cutting concern that must not impact session latency.
 
-### 3.2 Data Plane
-
-The data plane executes live voice sessions. It terminates SIP or WebRTC calls, manages duplex audio streams, and orchestrates the ASR → LLM → TTS pipeline using streaming partials and tokens.
-
-The data plane owns session context, turn-taking, barge-in handling, tool invocation, and confirmation loops. It injects tenant and domain context at runtime and enforces safety policies such as PII redaction and rate limiting.
+- **The Invariant:** PII redaction (Email/Phone/Digits) is an enforced data-plane invariant before any event reaches the persistence layer.
 
 ---
 
-### 3.3 Integration Plane
+## 3. The Semantic Gate (Primary Runtime Interface)
 
-The integration plane translates conversational outcomes into durable business actions. It is fully asynchronous and isolated from the data plane to prevent external system failures from impacting real-time interactions.
+### 3.1 Definition
 
-This plane manages retries, circuit breakers, reconciliation, and replay. It exposes outbound webhooks and operator remediation tools and guarantees exactly-once effects through idempotency.
+The **Semantic Gate** is the architectural boundary in the Data Plane where Voxeron decides if an utterance is actionable.
 
----
+### 3.2 Non-negotiable Rules
 
-### 3.4 Edge Plane
-
-The edge plane enables reliable interaction with on-site hardware such as printers. It operates independently from the data plane and provides local durability in unreliable network environments.
-
-Edge agents communicate using secure outbound connections, persist jobs locally, and reconcile automatically when connectivity is restored. The platform remains authoritative at all times.
+1. **Deterministic Priority:** Intent evaluation against the `MenuSnapshot` and State-Machine occurs before any generative processing.  
+2. **Validation-Required Mutation:** LLM output must never directly mutate the order state. It must be parsed into a typed contract that is then validated by the controller.  
+3. **Latched Confirmation:** Critical actions (e.g., finalizing an order) require an explicit "Latch" state where the user must confirm the deterministic summary.
 
 ---
 
-## 4. Tenant Isolation Mechanics
+## 4. Verification Gates (ADR-004)
 
-Tenant isolation is enforced systematically across the platform.
+Blueprint v0.6 required reliability; v0.6.1 formalizes **Verification** as an infrastructure invariant. We adopt the four-layer verification hierarchy:
 
-Concurrency limits and rate limits are applied per tenant at the application layer. Integration workloads are isolated by queue and may optionally be dedicated for enterprise tiers. All persistent data is protected by Row-Level Security. Cost usage is tracked per tenant with circuit breakers to prevent runaway spend.
+- **A1 (Micro Linguistic):** Pure normalization (fast, universal).  
+- **A2 (Tenant Linguistic):** Alias and prefix logic (fast, tenant-scoped).  
+- **B1 (Controller Golden):** Headless regression of the state-machine (deterministic).  
+- **B2 (Integration Smoke):** Full-stack STT/LLM/TTS validation (nightly/asynchronous).  
 
-The default deployment model uses shared infrastructure with strict quotas. Dedicated resources are an opt-in enhancement, not an architectural requirement.
-
----
-
-## 5. State Ownership and Stateless Execution
-
-Voxeron is stateless at the execution layer. All state has a clearly defined owner.
-
-Ephemeral streaming data lives only in memory. Hot session state and caches are stored in Redis with defined TTLs. Durable execution records are persisted in the database. Optional recordings and artifacts are stored separately for compliance purposes.
-
-If Redis is unavailable, the system degrades gracefully by falling back to durable sources and disabling caching. Worker restarts are tolerated without data loss beyond transient streaming buffers.
+**Consequence:** A passing regression suite is not "storytelling"; it is a **mathematical proof** of platform invariants.
 
 ---
 
-## 6. Contract Surfaces
+## 5. Telemetry Audit Window (S1-4A)
 
-Voxeron is contract-first. Certain surfaces are immutable within a minor version and may only change through explicit version bumps.
+To support the Blueprint’s goal of "Operational Safety," we introduce the **S1-4A Audit Window**. Before any new generative behavior (S2+) is activated, the platform must correlate telemetry data to quantify:
 
-These include tool contracts, event schemas, the action lifecycle, the core data model, the edge agent protocol, and the public API surface.
-
-This guarantees that teams can develop, deploy, and scale independently without fear of silent breaking changes.
-
----
-
-## 7. Vendor Routing Layer
-
-Vendor selection is performed dynamically on a per-session basis.
-
-Routing decisions consider language, domain, noise profile, latency budget, tenant tier, cost caps, and provider health. The routing layer determines which ASR, LLM, and TTS providers are used for a given session.
-
-All routing decisions are recorded as session metadata to support observability, auditing, and cost attribution.
+1. **Scope Drift:** Frequency of LLM suggestions falling outside the `MenuSnapshot`.  
+2. **Conversion Friction:** Correlation between specific intents (e.g., complex spice queries) and session abandonment.  
+3. **Funnel Integrity:** Explicit lifecycle markers (`CALL_STARTED`, `ORDER_CONFIRMED`) are now mandatory to provide a high-integrity success baseline.
 
 ---
 
-## 8. Blueprint Engine
+## 6. What Remains Untouched
 
-The blueprint engine defines *what the system is allowed to do* without embedding business logic directly into code.
+To preserve the integrity of the locked v0.6 baseline, the following core sections remain strictly unchanged:
 
-Blueprints are evaluated at session start and govern intent handling, validation rules, tool availability, confirmation policies, and escalation behavior.
-
-### 8.1 Blueprint Composition
-
-Blueprints are composed from three layers:
-
-A **sector blueprint** defines generic conversational behavior for a domain.  
-A **tenant overlay** applies tenant-specific constraints and content.  
-A **runtime policy** controls session-level behavior such as barge-in sensitivity and turn limits.
-
-Composition is deterministic and versioned.
+- **Section 3:** The four-plane hierarchy.  
+- **Section 12:** Security and Compliance (Row-Level Security and encryption models).  
+- **Section 14:** Scaling Model (Stateless session workers).  
+- **Section 9:** Edge Agent responsibilities and mTLS connectivity.  
 
 ---
 
-### 8.2 Blueprint Responsibilities
-
-Blueprints declare supported intents, required information, validation rules, and repair strategies. They define which tools may be invoked and under what conditions confirmation or escalation is required.
-
-Blueprints describe policy and structure, not execution logic.
-
----
-
-### 8.3 Typed Tool Contracts
-
-Blueprints reference a fixed set of typed tools that form the boundary between conversation and execution.
-
-Tool inputs and outputs are validated against versioned schemas before and after execution. This guarantees deterministic orchestration and prevents integration drift.
-
----
-
-### 8.4 Tool Error Semantics
-
-Tool failures are expressed using a standardized error envelope. This envelope communicates machine-readable intent, user-safe messaging, retry guidance, and classification for metrics and alerting.
-
-Error categories distinguish between validation errors, integration failures, timeouts, rate limits, and system unavailability. This allows orchestration logic to react predictably.
-
----
-
-## 9. Restaurant Domain Implementation
-
-The restaurant domain is the reference implementation for Voxeron.
-
-It focuses on hybrid overflow automation during peak hours while preserving order accuracy, kitchen reliability, and customer experience.
-
-### 9.1 Call Lifecycle
-
-A typical call progresses through session bootstrap, greeting, intent detection, slot collection, validation, confirmation, asynchronous POS write-back, kitchen ticket dispatch, optional customer messaging, and metrics emission.
-
-Each stage is observable and failure-aware.
-
----
-
-### 9.2 Human Fallback
-
-When confidence drops or system health degrades, Voxeron escalates to a human.
-
-Escalation may occur through immediate transfer, warm handover with structured summary, or deferred callback scheduling. Triggers include repeated repair failures, integration errors, or latency budget breaches.
-
----
-
-## 10. Integration Layer
-
-The integration layer is responsible for translating conversational intent into business outcomes.
-
-It operates entirely asynchronously and expresses all outcomes as immutable events. External system failures are contained within this plane and never block real-time voice execution.
-
----
-
-## 11. Idempotency
-
-All externally visible side effects are protected by idempotency.
-
-Idempotency keys are generated by the data plane, enforced in persistence, and honored by integration workers. This ensures retries never produce duplicate orders, prints, or messages.
-
----
-
-## 12. Edge Agent
-
-Edge agents provide reliable execution of on-site tasks such as printing.
-
-They maintain durable local queues, deduplicate jobs, report health, and reconcile automatically after outages. The platform remains authoritative and can cancel or supersede work at any time.
-
----
-
-## 13. Canonical Identifiers
-
-Voxeron uses globally unique identifiers to correlate activity across planes and systems.
-
-Identifiers are minted once, propagated consistently, and included in logs, metrics, events, and traces to guarantee full observability and auditability.
-
----
-
-## 14. Data Model
-
-The core data model is intentionally minimal and domain-agnostic.
-
-Tenancy, configuration, runtime execution, and domain content are clearly separated. This allows Voxeron to expand into new domains without structural redesign.
-
----
-
-## 15. Observability and Operations
-
-Observability is a first-class contract.
-
-The platform emits structured logs, metrics, and traces that allow operators to reason about latency, quality, failures, tenant behavior, and system health. Operational runbooks define standard responses to known failure modes.
-
----
-
-## 16. Data Governance and Retention
-
-Data retention is tenant-configurable and aligned with sector requirements.
-
-Retention policies apply independently to transcripts, recordings, events, and actions. This ensures compliance without sacrificing operational insight.
-
----
-
-## 17. Change Control
-
-Change control is strict.
-
-Within a minor version, only additive and backward-compatible changes are allowed. All architectural decisions are documented, auditable, and reversible. Rollbacks must always be possible.
-
----
-
-**Voxeron Platform Blueprint v0.6.1**  
-**Locked and Clarified Reference Architecture**
+**Voxeron Platform Blueprint v0.6.1 Addendum**  
+*Clarifying the Deterministic-First Engineering Contract*
